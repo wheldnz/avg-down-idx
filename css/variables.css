@@ -1,0 +1,155 @@
+/* ============================================
+   AVG DOWN IDX — CSS Variables (Design Tokens)
+   Theme: White & Gold/Yellow
+   ============================================ */
+
+:root {
+  /* ── Primary Colors (Gold/Yellow) ── */
+  --gold-50: #FFFDF5;
+  --gold-100: #FFF9E0;
+  --gold-200: #FFF3BF;
+  --gold-300: #FFE880;
+  --gold-400: #FFD940;
+  --gold-500: #FFC107;
+  --gold-600: #E5A800;
+  --gold-700: #CC9600;
+  --gold-800: #997000;
+  --gold-900: #664B00;
+
+  /* ── Neutral Colors ── */
+  --white: #FFFFFF;
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --gray-300: #E0E0E0;
+  --gray-400: #BDBDBD;
+  --gray-500: #9E9E9E;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+  --black: #0A0A0A;
+
+  /* ── Semantic Colors ── */
+  --success: #00C853;
+  --success-light: rgba(0, 200, 83, 0.1);
+  --success-dark: #009624;
+  --danger: #FF1744;
+  --danger-light: rgba(255, 23, 68, 0.1);
+  --danger-dark: #D50000;
+  --warning: #FF9100;
+  --warning-light: rgba(255, 145, 0, 0.1);
+  --info: #2196F3;
+  --info-light: rgba(33, 150, 243, 0.1);
+
+  /* ── Light Theme (Default) ── */
+  --bg-primary: #FAFAF7;
+  --bg-secondary: var(--white);
+  --bg-card: var(--white);
+  --bg-card-hover: var(--gold-50);
+  --bg-input: var(--white);
+  --bg-header: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+  --bg-result: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-600) 100%);
+  --bg-result-alt: linear-gradient(135deg, #1A1A2E 0%, #0F3460 100%);
+
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  --text-on-gold: var(--gray-900);
+  --text-on-dark: var(--white);
+
+  --border-color: var(--gray-200);
+  --border-focus: var(--gold-500);
+  --divider: var(--gray-200);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --shadow-xl: 0 20px 40px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.06);
+  --shadow-gold: 0 4px 15px rgba(255, 193, 7, 0.3);
+  --shadow-gold-lg: 0 8px 30px rgba(255, 193, 7, 0.35);
+
+  /* ── Typography ── */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.25rem;
+  --fs-2xl: 1.5rem;
+  --fs-3xl: 1.875rem;
+  --fs-4xl: 2.25rem;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.75;
+
+  /* ── Spacing ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Border Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Z-Index ── */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/* ── Dark Theme ── */
+[data-theme="dark"] {
+  --bg-primary: #0F0F14;
+  --bg-secondary: #1A1A24;
+  --bg-card: #1E1E2A;
+  --bg-card-hover: #26263A;
+  --bg-input: #252535;
+  --bg-header: linear-gradient(135deg, #0A0A12 0%, #141428 50%, #1A1A3E 100%);
+  --bg-result: linear-gradient(135deg, var(--gold-600) 0%, var(--gold-700) 100%);
+  --bg-result-alt: linear-gradient(135deg, #1A1A3E 0%, #252560 100%);
+
+  --text-primary: #F1F1F5;
+  --text-secondary: #A0A0B8;
+  --text-tertiary: #6B6B84;
+  --text-on-gold: var(--gray-900);
+
+  --border-color: #2A2A3E;
+  --border-focus: var(--gold-500);
+  --divider: #2A2A3E;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.25);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.35);
+  --shadow-xl: 0 20px 40px rgba(0,0,0,0.4);
+  --shadow-gold: 0 4px 15px rgba(255, 193, 7, 0.2);
+  --shadow-gold-lg: 0 8px 30px rgba(255, 193, 7, 0.25);
+}
