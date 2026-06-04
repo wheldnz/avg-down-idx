@@ -1,68 +1,73 @@
-# 📊 Avg Down IDX
+# React + TypeScript + Vite
 
-Kalkulator Average Down & Average Up saham Indonesia yang lengkap dan profesional.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## ✨ Fitur
+Currently, two official plugins are available:
 
-- 🏢 **19 Broker Indonesia** — Stockbit, Ajaib, Mirae, IPOT, BNI, Mandiri, dan lainnya
-- 📊 **Multi-Step Averaging** — Hingga 10 tahap pembelian bertahap
-- ⬆⬇ **Mode Average Down & Up** — Toggle sesuai kebutuhan
-- 💰 **Live Modal Preview** — Preview harga modal otomatis saat input berubah
-- 📈 **3 Chart Interaktif** — Donut, Bar, dan Line chart
-- 🎚️ **Target Harga Slider** — Simulasi custom di harga berapa pun
-- 🌙 **Dark Mode** — Toggle tema gelap/terang
-- 📜 **Riwayat Kalkulasi** — Simpan dan muat ulang hingga 50 perhitungan
-- 📸 **Export PNG** — Simpan hasil sebagai gambar
-- 📄 **Export PDF** — Generate laporan PDF
-- 📋 **Copy to Clipboard** — Salin ringkasan teks
-- 💬 **Share WhatsApp** — Bagikan langsung ke WhatsApp
-- 📱 **PWA** — Install di home screen HP, bisa offline
-- ⌨️ **Auto-format angka** — Pemisah ribuan otomatis (1.000.000)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## 🚀 Cara Menjalankan
+## React Compiler
 
-```bash
-# Gunakan local server (karena ES Modules)
-npx serve .
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-# Atau
-python -m http.server 3000
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-Buka `http://localhost:3000` di browser.
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-## 📁 Struktur File
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-├── index.html          # HTML utama
-├── manifest.json       # PWA manifest
-├── sw.js               # Service Worker
-├── REFERENCE.md        # Spesifikasi kalkulasi
-├── css/
-│   ├── variables.css   # Design tokens
-│   ├── base.css        # Reset & typography
-│   ├── components.css  # UI components
-│   ├── layout.css      # Responsive grid
-│   └── animations.css  # Micro-animations
-└── js/
-    ├── app.js          # Entry point
-    ├── calculator.js   # Engine kalkulasi
-    ├── brokers.js      # Database broker
-    ├── ui.js           # DOM rendering
-    ├── charts.js       # Chart.js
-    ├── storage.js      # localStorage
-    ├── export.js       # Export/share
-    └── utils.js        # Helpers
-```
-
-## 🧮 Rumus
-
-- **Average Baru** = (Total Nilai Lama + Total Nilai Baru) / Total Lembar
-- **BEP** = Total Modal / (Total Lembar × (1 - Fee Jual%))
-- **Profit/Loss** = (Harga Jual × Lembar - Fee Jual) - Total Modal
-
-Lihat [REFERENCE.md](REFERENCE.md) untuk detail lengkap.
-
-## 📝 Lisensi
-
-MIT License © 2026

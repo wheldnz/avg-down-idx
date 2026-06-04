@@ -1,10 +1,12 @@
-/**
- * AVG DOWN IDX — Broker Data
- * Database of Indonesian stock brokers and their fees
- * Source: Research June 2025/2026 (estimates, may change)
- */
+export interface Broker {
+  id: string;
+  name: string;
+  buyFee: number;
+  sellFee: number;
+  description: string;
+}
 
-const BROKERS = [
+export const BROKERS: Broker[] = [
   {
     id: "stockbit",
     name: "Stockbit",
@@ -140,21 +142,10 @@ const BROKERS = [
   }
 ];
 
-/**
- * Get all brokers
- * @returns {Array} Array of broker objects
- */
-function getBrokers() {
+export function getBrokers(): Broker[] {
   return BROKERS;
 }
 
-/**
- * Get broker by ID
- * @param {string} id - Broker ID
- * @returns {Object|undefined} Broker object or undefined
- */
-function getBrokerById(id) {
+export function getBrokerById(id: string): Broker | undefined {
   return BROKERS.find(b => b.id === id);
 }
-
-export { BROKERS, getBrokers, getBrokerById };

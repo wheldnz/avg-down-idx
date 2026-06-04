@@ -1,7 +1,4 @@
-/**
- * AVG DOWN IDX — Storage Module
- * localStorage operations for history and settings
- */
+import { Broker } from './brokers';
 
 const STORAGE_KEYS = {
   history: 'avgdown_history',
@@ -10,15 +7,38 @@ const STORAGE_KEYS = {
 
 const MAX_HISTORY = 50;
 
-/**
- * Save a calculation to history
- * @param {Object} data - Calculation data to save
- */
-function saveCalculation(data) {
+export interface HistoryItemPosition {
+  label: string;
+  price: number;
+  lots: number;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: string;
+  stockCode: string;
+  mode: string;
+  broker: Broker;
+  positions: HistoryItemPosition[];
+  result: {
+    averagePrice: number;
+    totalLots: number;
+    totalShares: number;
+    totalModal: number;
+    bep: number;
+  };
+}
+
+export interface Settings {
+  theme: 'light' | 'dark';
+  lastBroker: string;
+  version: string;
+}
+
+export function saveCalculation(data: HistoryItem): void {
   const history = getHistory();
   history.unshift(data);
   
-  // Keep max items
   if (history.length > MAX_HISTORY) {
     history.splice(MAX_HISTORY);
   }
@@ -30,11 +50,7 @@ function saveCalculation(data) {
   }
 }
 
-/**
- * Get all history items
- * @returns {Array} History items array
- */
-function getHistory() {
+export function getHistory(): HistoryItem[] {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.history);
     return data ? JSON.parse(data) : [];
@@ -44,21 +60,12 @@ function getHistory() {
   }
 }
 
-/**
- * Get a single history item by ID
- * @param {string} id - History item ID
- * @returns {Object|null} History item or null
- */
-function getHistoryById(id) {
+export function getHistoryById(id: string): HistoryItem | null {
   const history = getHistory();
   return history.find(item => item.id === id) || null;
 }
 
-/**
- * Delete a single history item
- * @param {string} id - History item ID
- */
-function deleteHistoryItem(id) {
+export function deleteHistoryItem(id: string): void {
   const history = getHistory().filter(item => item.id !== id);
   try {
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history));
@@ -67,10 +74,7 @@ function deleteHistoryItem(id) {
   }
 }
 
-/**
- * Clear all history
- */
-function clearHistory() {
+export function clearHistory(): void {
   try {
     localStorage.removeItem(STORAGE_KEYS.history);
   } catch (e) {
@@ -78,11 +82,7 @@ function clearHistory() {
   }
 }
 
-/**
- * Save settings
- * @param {Object} settings - Settings object
- */
-function saveSettings(settings) {
+export function saveSettings(settings: Partial<Settings>): void {
   try {
     const current = getSettings();
     const merged = { ...current, ...settings };
@@ -92,11 +92,7 @@ function saveSettings(settings) {
   }
 }
 
-/**
- * Get settings
- * @returns {Object} Settings object
- */
-function getSettings() {
+export function getSettings(): Settings {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.settings);
     return data ? JSON.parse(data) : {
@@ -108,13 +104,3 @@ function getSettings() {
     return { theme: 'light', lastBroker: 'stockbit', version: '1.0.0' };
   }
 }
-
-export {
-  saveCalculation,
-  getHistory,
-  getHistoryById,
-  deleteHistoryItem,
-  clearHistory,
-  saveSettings,
-  getSettings
-};
