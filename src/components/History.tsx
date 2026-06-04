@@ -1,4 +1,5 @@
 import React from 'react';
+import { History as HistoryIcon, ArrowUp, ArrowDown } from 'lucide-react';
 import { HistoryItem } from '../utils/storage';
 import { formatRupiah, formatDate } from '../utils/formatters';
 
@@ -15,7 +16,7 @@ export const History: React.FC<HistoryProps> = ({ history, onLoad, onDelete, onC
   return (
     <div className="card animate-fade-in-up" id="history-card">
       <div className="card-header">
-        <div className="card-header-icon gold">🕰️</div>
+        <div className="card-header-icon gold"><HistoryIcon size={24} /></div>
         <div>
           <div className="card-header-title">Riwayat Kalkulasi</div>
           <div className="card-header-subtitle">Data kalkulasi terakhir Anda</div>
@@ -26,8 +27,8 @@ export const History: React.FC<HistoryProps> = ({ history, onLoad, onDelete, onC
         {history.map(item => (
           <div key={item.id} className="history-item">
             <div className="history-item-header">
-              <span className="history-item-title">
-                {item.mode === 'up' ? '⬆ Average Up' : '⬇ Average Down'} {item.stockCode ? `(${item.stockCode})` : ''}
+              <span className="history-item-title flex items-center gap-1">
+                {item.mode === 'up' ? <><ArrowUp size={14}/> Average Up</> : <><ArrowDown size={14}/> Average Down</>} {item.stockCode ? `(${item.stockCode})` : ''}
               </span>
               <span className="history-item-date">{formatDate(item.timestamp)}</span>
             </div>

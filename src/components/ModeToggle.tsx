@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 interface ModeToggleProps {
   mode: 'down' | 'up';
@@ -14,13 +15,13 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ mode, onModeChange }) =>
             className={`mode-toggle-btn ${mode === 'down' ? 'active' : ''}`}
             onClick={() => onModeChange('down')}
           >
-            ⬇ Avg Down
+            <ArrowDown size={18} style={{ marginRight: '6px' }} /> Avg Down
           </button>
           <button 
             className={`mode-toggle-btn ${mode === 'up' ? 'active' : ''}`}
             onClick={() => onModeChange('up')}
           >
-            ⬆ Avg Up
+            <ArrowUp size={18} style={{ marginRight: '6px' }} /> Avg Up
           </button>
         </div>
       </div>

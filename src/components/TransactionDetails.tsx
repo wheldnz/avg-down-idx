@@ -1,4 +1,5 @@
 import React from 'react';
+import { ReceiptText } from 'lucide-react';
 import { CalcResult } from '../utils/calculator';
 import { formatNumber, formatRupiah } from '../utils/formatters';
 
@@ -12,7 +13,7 @@ export const TransactionDetails: React.FC<TransactionDetailsProps> = ({ calcResu
   return (
     <div className="card animate-fade-in-up" id="details-card">
       <div className="card-header">
-        <div className="card-header-icon gold">📑</div>
+        <div className="card-header-icon gold"><ReceiptText size={24} /></div>
         <div>
           <div className="card-header-title">Rincian Transaksi</div>
           <div className="card-header-subtitle">Detail nilai transaksi dan fee broker</div>

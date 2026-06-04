@@ -1,4 +1,5 @@
 import React from 'react';
+import { FileEdit, Pin, Wallet, Zap, X } from 'lucide-react';
 import { getBrokers, getBrokerById } from '../utils/brokers';
 import { formatNumber, parseFormattedNumber, formatRupiah } from '../utils/formatters';
 import { InputFormData, PurchaseStepData } from '../types';
@@ -88,7 +89,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
   return (
     <div className="card animate-fade-in-up" id="input-card">
       <div className="card-header">
-        <div className="card-header-icon gold">📝</div>
+        <div className="card-header-icon gold"><FileEdit size={24} /></div>
         <div>
           <div className="card-header-title" id="mode-title">
             {mode === 'up' ? 'Average Up' : 'Average Down'}
@@ -170,7 +171,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
       <div className="divider"></div>
 
       <div className="step-label">
-        <span className="step-number">📌</span>
+        <span className="step-number"><Pin size={16} /></span>
         <span className="step-text">Posisi Saat Ini</span>
       </div>
       <div className="input-row">
@@ -204,7 +205,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
         </div>
       </div>
       <div className={`modal-preview ${currentHasValue ? 'has-value' : ''}`}>
-        <span className="modal-preview-icon">💰</span>
+        <span className="modal-preview-icon"><Wallet size={16} /></span>
         <span className="modal-preview-text">Modal: <strong>{currentPreview}</strong></span>
       </div>
 
@@ -228,7 +229,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
                 onClick={() => removePurchaseStep(step.id)}
                 aria-label={`Hapus pembelian #${stepNum}`}
               >
-                ✕
+                <X size={16} />
               </button>
               <div className="input-row">
                 <div className="input-group">
@@ -259,7 +260,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
                 </div>
               </div>
               <div className={`modal-preview ${hasValue ? 'has-value' : ''}`}>
-                <span className="modal-preview-icon">💰</span>
+                <span className="modal-preview-icon"><Wallet size={16} /></span>
                 <span className="modal-preview-text">Modal: <strong>{preview}</strong></span>
               </div>
             </div>
@@ -281,7 +282,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
       <div className="divider"></div>
 
       <button type="button" className="btn btn-primary" onClick={onCalculate}>
-        ⚡ Hitung Average
+        <Zap size={18} style={{ marginRight: '8px' }} /> Hitung Average
       </button>
     </div>
   );

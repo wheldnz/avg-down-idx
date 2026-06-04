@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
 import { ToastItem } from '../hooks/useToast';
 
 interface ToastContainerProps {
@@ -14,7 +15,10 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts }) => {
           className={`toast toast-${toast.type} ${toast.removing ? 'toast-out' : ''}`}
         >
           <span>
-            {toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : 'ℹ'}
+            {toast.type === 'success' ? <CheckCircle size={18} /> : 
+             toast.type === 'error' ? <XCircle size={18} /> : 
+             toast.type === 'warning' ? <AlertTriangle size={18} /> :
+             <Info size={18} />}
           </span>
           <span>{toast.message}</span>
         </div>

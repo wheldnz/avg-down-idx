@@ -7,7 +7,7 @@ export function buildTextSummary(calcResult: CalcResult, simResults: SimulationR
   const modeLabel = mode === 'up' ? 'Average Up' : 'Average Down';
   const stock = stockCode ? ` (${stockCode})` : '';
   
-  let text = `📊 *${modeLabel} IDX*${stock}\n`;
+  let text = `[ ${modeLabel} IDX${stock} ]\n`;
   text += `━━━━━━━━━━━━━━━\n`;
   text += `Avg Lama: ${formatRupiah(calcResult.currentDetail.price)} × ${formatNumber(calcResult.currentDetail.lots)} Lot\n`;
   
@@ -16,21 +16,21 @@ export function buildTextSummary(calcResult: CalcResult, simResults: SimulationR
   });
   
   text += `━━━━━━━━━━━━━━━\n`;
-  text += `✅ *Average Baru: ${formatRupiah(calcResult.averagePrice)}*\n`;
-  text += `📦 Total: ${formatNumber(calcResult.totalLots)} Lot (${formatNumber(calcResult.totalShares)} Lbr)\n`;
-  text += `💰 Total Modal: ${formatRupiah(calcResult.totalModal)}\n`;
-  text += `📍 BEP: ${formatRupiah(calcResult.bep)}\n`;
-  text += `🏢 Broker: ${calcResult.broker.name || '-'}\n`;
+  text += `Average Baru: ${formatRupiah(calcResult.averagePrice)}\n`;
+  text += `Total: ${formatNumber(calcResult.totalLots)} Lot (${formatNumber(calcResult.totalShares)} Lbr)\n`;
+  text += `Total Modal: ${formatRupiah(calcResult.totalModal)}\n`;
+  text += `BEP: ${formatRupiah(calcResult.bep)}\n`;
+  text += `Broker: ${calcResult.broker.name || '-'}\n`;
   text += `━━━━━━━━━━━━━━━\n`;
-  text += `📈 *Simulasi:*\n`;
+  text += `Simulasi:\n`;
   
   simResults.forEach(s => {
-    const emoji = s.isProfit ? '🟢' : s.isLoss ? '🔴' : '🟡';
-    text += `${emoji} ${s.label}: ${formatRupiah(s.profitLoss)}\n`;
+    const symbol = s.isProfit ? '+' : s.isLoss ? '-' : '~';
+    text += `${symbol} ${s.label}: ${formatRupiah(s.profitLoss)}\n`;
   });
 
   text += `━━━━━━━━━━━━━━━\n`;
-  text += `_Powered by Avg Down IDX_`;
+  text += `Powered by Avg Down IDX`;
   
   return text;
 }

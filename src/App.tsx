@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Lightbulb } from 'lucide-react';
 import { Header } from './components/Header';
 import { ModeToggle } from './components/ModeToggle';
 import { InputForm } from './components/InputForm';
@@ -198,7 +199,7 @@ function App() {
                 </div>
               ) : (
                 <div className="empty-state" id="empty-state">
-                  <div className="empty-state-icon">💡</div>
+                  <div className="empty-state-icon"><Lightbulb size={48} className="gold-text" /></div>
                   <h3>Belum Ada Kalkulasi</h3>
                   <p>Silakan isi data posisi saham Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
                 </div>
