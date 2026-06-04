@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileEdit, Pin, Wallet, Zap, X } from 'lucide-react';
+import { Pin, Wallet, Zap, X } from 'lucide-react';
 import { getBrokers, getBrokerById } from '../utils/brokers';
 import { formatNumber, parseFormattedNumber, formatRupiah } from '../utils/formatters';
 import { InputFormData, PurchaseStepData } from '../types';
@@ -89,7 +89,7 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
   return (
     <div className="card animate-fade-in-up" id="input-card">
       <div className="card-header">
-        <div className="card-header-icon gold"><FileEdit size={24} /></div>
+        <div className="card-header-icon gold">📝</div>
         <div>
           <div className="card-header-title" id="mode-title">
             {mode === 'up' ? 'Average Up' : 'Average Down'}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Target } from 'lucide-react';
 import { CalcResult, SimulationResult, simulateAtPrice } from '../utils/calculator';
 import { formatRupiah, formatPercent } from '../utils/formatters';
 
@@ -38,7 +37,7 @@ export const Simulation: React.FC<SimulationProps> = ({ calcResult }) => {
   return (
     <div className="card animate-fade-in-up" id="simulation-card">
       <div className="card-header">
-        <div className="card-header-icon gold"><Target size={24} /></div>
+        <div className="card-header-icon gold">🎯</div>
         <div>
           <div className="card-header-title">Simulasi Target Harga</div>
           <div className="card-header-subtitle">Geser slider untuk melihat potensi profit/loss</div>

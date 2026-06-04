@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChart, Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 
 interface HeaderProps {
   theme: 'light' | 'dark';
@@ -12,7 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, onToggleTheme }) => {
       <div className="container">
         <div className="header-content">
           <div className="header-logo">
-            <div className="header-logo-icon"><LineChart size={28} className="gold-text" /></div>
+            <div className="header-logo-icon">📊</div>
             <div>
               <div className="header-title">Avg Down <span>IDX</span></div>
               <div className="header-subtitle">Kalkulator Saham Indonesia</div>

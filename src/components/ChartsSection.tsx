@@ -1,5 +1,4 @@
 import React from 'react';
-import { PieChart } from 'lucide-react';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -192,7 +191,7 @@ export const ChartsSection: React.FC<ChartsSectionProps> = ({ calcResult, simRes
   return (
     <div className="card animate-fade-in-up" id="charts-card">
       <div className="card-header">
-        <div className="card-header-icon gold"><PieChart size={24} /></div>
+        <div className="card-header-icon gold">📈</div>
         <div>
           <div className="card-header-title">Visualisasi Data</div>
           <div className="card-header-subtitle">Grafik analisis komposisi dan proyeksi</div>

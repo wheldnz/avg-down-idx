@@ -15,7 +15,6 @@ interface ResultSectionProps {
 export const ResultSection: React.FC<ResultSectionProps> = ({ calcResult, simResults, stockCode, mode, onToast }) => {
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to result when calcResult changes
   useEffect(() => {
     if (calcResult && resultRef.current) {
       setTimeout(() => {
@@ -29,14 +28,16 @@ export const ResultSection: React.FC<ResultSectionProps> = ({ calcResult, simRes
   return (
     <div className="card result-card animate-fade-in-up premium-card" id="result-card" ref={resultRef}>
       <div className="result-hero premium-gradient" id="result-hero">
-        <div className="result-label text-glow">Average Baru</div>
-        <div className="result-value glow" id="res-avg-price">{formatRupiah(calcResult.averagePrice)}</div>
-        <div className="result-sub">
-          <span className="badge premium-badge" id="res-broker-badge">{calcResult.broker.name || 'Custom'}</span>
+        <div className="result-hero-content">
+          <div className="result-label text-glow">Average Baru {stockCode && `(${stockCode})`}</div>
+          <div className="result-value glow" id="res-avg-price">{formatRupiah(calcResult.averagePrice)}</div>
+          <div className="result-sub">
+            <span className="badge premium-badge" id="res-broker-badge">{calcResult.broker.name || 'Custom'}</span>
+          </div>
         </div>
       </div>
       
-      <div className="result-grid mt-4">
+      <div className="result-grid">
         <div className="result-item premium-glass">
           <div className="result-item-label">Total Lot</div>
           <div className="result-item-value" id="res-total-lots">{formatNumber(calcResult.totalLots)}</div>
@@ -44,27 +45,29 @@ export const ResultSection: React.FC<ResultSectionProps> = ({ calcResult, simRes
         </div>
         <div className="result-item premium-glass">
           <div className="result-item-label">Total Modal (inc. Fee)</div>
-          <div className="result-item-value" id="res-total-modal">{formatRupiah(calcResult.totalModal)}</div>
+          <div className="result-item-value text-gold" id="res-total-modal">{formatRupiah(calcResult.totalModal)}</div>
         </div>
-        <div className="result-item premium-glass">
+        <div className="result-item premium-glass" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>
           <div className="result-item-label">BEP (Break Even)</div>
           <div className="result-item-value text-gold" id="res-bep">{formatRupiah(calcResult.bep)}</div>
         </div>
       </div>
       
-      <div className="action-grid mt-4">
-        <button className="btn btn-secondary action-btn" onClick={() => copyToClipboard(calcResult, simResults, stockCode, mode, onToast)}>
-          <Copy size={16} /> Salin
-        </button>
-        <button className="btn btn-secondary action-btn" onClick={() => exportPNG('result-card', document.documentElement.getAttribute('data-theme') === 'dark', onToast)}>
-          <Camera size={16} /> Gambar
-        </button>
-        <button className="btn btn-secondary action-btn" onClick={() => exportPDF(calcResult, simResults, stockCode, mode, onToast)}>
-          <FileText size={16} /> PDF
-        </button>
-        <button className="btn btn-secondary action-btn" onClick={() => shareWhatsApp(calcResult, simResults, stockCode, mode, onToast)}>
-          <MessageCircle size={16} /> WA
-        </button>
+      <div style={{ padding: '0 1rem 1.5rem 1rem' }}>
+        <div className="action-grid mt-4">
+          <button className="btn btn-secondary action-btn" onClick={() => copyToClipboard(calcResult, simResults, stockCode, mode, onToast)}>
+            <Copy size={16} /> Salin
+          </button>
+          <button className="btn btn-secondary action-btn" onClick={() => exportPNG('result-card', document.documentElement.getAttribute('data-theme') === 'dark', onToast)}>
+            <Camera size={16} /> Gambar
+          </button>
+          <button className="btn btn-secondary action-btn" onClick={() => exportPDF(calcResult, simResults, stockCode, mode, onToast)}>
+            <FileText size={16} /> PDF
+          </button>
+          <button className="btn btn-secondary action-btn" onClick={() => shareWhatsApp(calcResult, simResults, stockCode, mode, onToast)}>
+            <MessageCircle size={16} /> WA
+          </button>
+        </div>
       </div>
     </div>
   );
