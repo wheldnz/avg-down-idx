@@ -167,3 +167,85 @@ export function simulateAtPrice(calcResult: CalcResult, targetPrice: number): Si
     isLoss: profitLoss < 0
   };
 }
+
+export interface TargetCalcResult {
+  requiredLots: number;
+  requiredShares: number;
+  requiredCapital: number;
+  requiredFee: number;
+  totalNewLots: number;
+  totalNewShares: number;
+  totalNewCapital: number;
+  finalAverage: number;
+  finalAverageExact: number;
+  currentDetail: TransactionDetail;
+  newPurchaseDetail: TransactionDetail;
+  broker: Broker;
+  isValid: boolean;
+  errorMessage?: string;
+}
+
+export function calculateTargetAverage(
+  currentPosition: Position, 
+  targetAverage: number, 
+  newPrice: number, 
+  broker: Broker,
+  mode: 'up' | 'down'
+): TargetCalcResult {
+  const P1 = currentPosition.price;
+  const L1 = currentPosition.lots;
+  const T = targetAverage;
+  const P2 = newPrice;
+  
+  const currentDetail = calculateTransaction(P1, L1, broker.buyFee);
+  
+  let isValid = true;
+  let errorMessage = '';
+  
+  if (mode === 'down') {
+    if (T >= P1) {
+      isValid = false;
+      errorMessage = 'Target Average harus lebih rendah dari Harga Saat Ini.';
+    } else if (T <= P2) {
+      isValid = false;
+      errorMessage = 'Target Average harus lebih tinggi dari Harga Beli Baru.';
+    }
+  } else {
+    if (T <= P1) {
+      isValid = false;
+      errorMessage = 'Target Average harus lebih tinggi dari Harga Saat Ini.';
+    } else if (T >= P2) {
+      isValid = false;
+      errorMessage = 'Target Average harus lebih rendah dari Harga Beli Baru.';
+    }
+  }
+  
+  let requiredLots = 0;
+  if (isValid) {
+    requiredLots = Math.ceil(Math.abs(L1 * (P1 - T) / (T - P2)));
+  }
+  
+  const newPurchaseDetail = calculateTransaction(P2, requiredLots, broker.buyFee);
+  
+  const totalValueNoFee = currentDetail.transactionValue + newPurchaseDetail.transactionValue;
+  const totalShares = currentDetail.shares + newPurchaseDetail.shares;
+  const finalAverageExact = totalShares > 0 ? totalValueNoFee / totalShares : 0;
+  const totalNewCapital = currentDetail.totalOutflow + newPurchaseDetail.totalOutflow;
+
+  return {
+    requiredLots,
+    requiredShares: newPurchaseDetail.shares,
+    requiredCapital: newPurchaseDetail.totalOutflow,
+    requiredFee: newPurchaseDetail.brokerFee,
+    totalNewLots: L1 + requiredLots,
+    totalNewShares: totalShares,
+    totalNewCapital,
+    finalAverage: Math.round(finalAverageExact),
+    finalAverageExact,
+    currentDetail,
+    newPurchaseDetail,
+    broker: { ...broker },
+    isValid,
+    errorMessage
+  };
+}

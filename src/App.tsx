@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Target } from 'lucide-react';
 import { Header } from './components/Header';
 import { ModeToggle } from './components/ModeToggle';
+import { CalcTypeToggle } from './components/CalcTypeToggle';
 import { InputForm } from './components/InputForm';
 import { ResultSection } from './components/ResultSection';
 import { ChartsSection } from './components/ChartsSection';
 import { TransactionDetails } from './components/TransactionDetails';
 import { Simulation } from './components/Simulation';
 import { History } from './components/History';
+import { TargetInputForm, TargetFormData } from './components/TargetInputForm';
+import { TargetResultSection } from './components/TargetResultSection';
 import { ToastContainer } from './components/ToastContainer';
 import { useToast } from './hooks/useToast';
 import { InputFormData } from './types';
-import { calculateAverage, simulateProfitLoss, CalcResult, SimulationResult } from './utils/calculator';
+import { calculateAverage, simulateProfitLoss, calculateTargetAverage, CalcResult, SimulationResult, TargetCalcResult } from './utils/calculator';
 import { getBrokerById } from './utils/brokers';
 import { parseFormattedNumber } from './utils/formatters';
 import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryItem, clearHistory as clearStorageHistory, HistoryItem } from './utils/storage';
@@ -19,6 +22,7 @@ import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryIt
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mode, setMode] = useState<'down' | 'up'>('down');
+  const [calcType, setCalcType] = useState<'regular' | 'target'>('regular');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   
   const [formData, setFormData] = useState<InputFormData>({
@@ -31,8 +35,21 @@ function App() {
     purchases: []
   });
 
+  const [targetFormData, setTargetFormData] = useState<TargetFormData>({
+    stockCode: '',
+    brokerId: 'stockbit',
+    customBuyFee: '0.15',
+    customSellFee: '0.25',
+    currentPrice: '',
+    currentLots: '',
+    targetAverage: '',
+    newPurchasePrice: ''
+  });
+
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [simResults, setSimResults] = useState<SimulationResult[]>([]);
+  
+  const [targetCalcResult, setTargetCalcResult] = useState<TargetCalcResult | null>(null);
 
   const { toasts, showToast } = useToast();
 
@@ -41,6 +58,7 @@ function App() {
     setTheme(settings.theme || 'light');
     if (settings.lastBroker) {
       setFormData(prev => ({ ...prev, brokerId: settings.lastBroker }));
+      setTargetFormData(prev => ({ ...prev, brokerId: settings.lastBroker }));
     }
     setHistoryItems(getHistory());
   }, []);
@@ -55,8 +73,7 @@ function App() {
     saveSettings({ theme: newTheme });
   };
 
-  const handleCalculate = () => {
-    // Validate inputs
+  const handleCalculateRegular = () => {
     const currentPrice = parseFormattedNumber(formData.currentPrice);
     const currentLots = parseFormattedNumber(formData.currentLots);
     
@@ -88,18 +105,14 @@ function App() {
       brokerData = { ...brokerData, buyFee: bFee, sellFee: sFee };
     }
 
-    // Save broker preference
     saveSettings({ lastBroker: formData.brokerId });
 
-    // Calculate
     const result = calculateAverage({ price: currentPrice, lots: currentLots }, purchases, brokerData);
     setCalcResult(result);
     
-    // Simulate Profit Loss
     const simRes = simulateProfitLoss(result);
     setSimResults(simRes);
 
-    // Save to history
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
@@ -124,7 +137,50 @@ function App() {
     showToast('Kalkulasi berhasil!', 'success');
   };
 
+  const handleCalculateTarget = () => {
+    const currentPrice = parseFormattedNumber(targetFormData.currentPrice);
+    const currentLots = parseFormattedNumber(targetFormData.currentLots);
+    const targetAvg = parseFormattedNumber(targetFormData.targetAverage);
+    const newPrice = parseFormattedNumber(targetFormData.newPurchasePrice);
+
+    if (currentPrice <= 0 || currentLots <= 0 || targetAvg <= 0 || newPrice <= 0) {
+      showToast('Semua field harga dan lot harus diisi lebih dari 0', 'error');
+      return;
+    }
+
+    const broker = getBrokerById(targetFormData.brokerId);
+    let brokerData = broker!;
+    
+    if (targetFormData.brokerId === 'custom') {
+      const bFee = parseFloat(targetFormData.customBuyFee.replace(',', '.'));
+      const sFee = parseFloat(targetFormData.customSellFee.replace(',', '.'));
+      if (isNaN(bFee) || isNaN(sFee)) {
+        showToast('Fee broker tidak valid', 'error');
+        return;
+      }
+      brokerData = { ...brokerData, buyFee: bFee, sellFee: sFee };
+    }
+
+    saveSettings({ lastBroker: targetFormData.brokerId });
+
+    const result = calculateTargetAverage(
+      { price: currentPrice, lots: currentLots },
+      targetAvg,
+      newPrice,
+      brokerData,
+      mode
+    );
+
+    setTargetCalcResult(result);
+    if (result.isValid) {
+      showToast('Kalkulasi target berhasil!', 'success');
+    } else {
+      showToast('Kalkulasi tidak valid', 'error');
+    }
+  };
+
   const loadHistoryItem = (item: HistoryItem) => {
+    setCalcType('regular');
     setMode(item.mode as 'down' | 'up');
     setFormData(prev => ({
       ...prev,
@@ -162,47 +218,75 @@ function App() {
       <Header theme={theme} onToggleTheme={toggleTheme} />
       
       <main className="main-content">
+        <CalcTypeToggle calcType={calcType} onTypeChange={setCalcType} />
         <ModeToggle mode={mode} onModeChange={setMode} />
         
-        <div className="container">
+        <div className="container mt-4">
           <div className="app-grid">
             <div className="grid-left">
-              <InputForm 
-                mode={mode} 
-                formData={formData} 
-                setFormData={setFormData} 
-                onCalculate={handleCalculate} 
-              />
+              {calcType === 'regular' ? (
+                <InputForm 
+                  mode={mode} 
+                  formData={formData} 
+                  setFormData={setFormData} 
+                  onCalculate={handleCalculateRegular} 
+                />
+              ) : (
+                <TargetInputForm 
+                  mode={mode} 
+                  formData={targetFormData} 
+                  setFormData={setTargetFormData} 
+                  onCalculate={handleCalculateTarget} 
+                />
+              )}
             </div>
             
             <div className="grid-right">
-              {calcResult ? (
-                <div id="results-container">
-                  <ResultSection 
-                    calcResult={calcResult} 
-                    simResults={simResults} 
-                    stockCode={formData.stockCode} 
-                    mode={mode} 
-                    onToast={showToast} 
-                  />
-                  <ChartsSection 
-                    calcResult={calcResult} 
-                    simResults={simResults} 
-                    theme={theme} 
-                  />
-                  <TransactionDetails 
-                    calcResult={calcResult} 
-                  />
-                  <Simulation 
-                    calcResult={calcResult} 
-                  />
-                </div>
+              {calcType === 'regular' ? (
+                calcResult ? (
+                  <div id="results-container">
+                    <ResultSection 
+                      calcResult={calcResult} 
+                      simResults={simResults} 
+                      stockCode={formData.stockCode} 
+                      mode={mode} 
+                      onToast={showToast} 
+                    />
+                    <ChartsSection 
+                      calcResult={calcResult} 
+                      simResults={simResults} 
+                      theme={theme} 
+                    />
+                    <TransactionDetails 
+                      calcResult={calcResult} 
+                    />
+                    <Simulation 
+                      calcResult={calcResult} 
+                    />
+                  </div>
+                ) : (
+                  <div className="empty-state" id="empty-state">
+                    <div className="empty-state-icon"><Lightbulb size={48} className="gold-text" /></div>
+                    <h3>Belum Ada Kalkulasi</h3>
+                    <p>Silakan isi data posisi saham Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
+                  </div>
+                )
               ) : (
-                <div className="empty-state" id="empty-state">
-                  <div className="empty-state-icon"><Lightbulb size={48} className="gold-text" /></div>
-                  <h3>Belum Ada Kalkulasi</h3>
-                  <p>Silakan isi data posisi saham Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
-                </div>
+                targetCalcResult ? (
+                  <div id="target-results-container">
+                    <TargetResultSection 
+                      calcResult={targetCalcResult} 
+                      stockCode={targetFormData.stockCode}
+                      mode={mode}
+                    />
+                  </div>
+                ) : (
+                  <div className="empty-state" id="empty-state">
+                    <div className="empty-state-icon"><Target size={48} className="gold-text" /></div>
+                    <h3>Belum Ada Kalkulasi Target</h3>
+                    <p>Silakan isi posisi saat ini, skenario target, dan harga beli baru, lalu klik "Hitung Kebutuhan Modal".</p>
+                  </div>
+                )
               )}
               
               <History 
