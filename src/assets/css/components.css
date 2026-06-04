@@ -1359,6 +1359,21 @@ input[type="range"]::-moz-range-thumb {
   gap: var(--space-2);
 }
 
+.result-label {
+  font-size: var(--fs-base);
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
+}
+
+.result-value {
+  font-size: 2.5rem;
+  font-weight: var(--fw-bold);
+  font-family: var(--font-mono);
+  color: var(--gold-400);
+  line-height: 1.1;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

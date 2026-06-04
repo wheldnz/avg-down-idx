@@ -1,8 +1,16 @@
 export function formatRupiah(num: number | null | undefined): string {
   if (num === null || num === undefined || isNaN(num)) return 'Rp 0';
   const isNegative = num < 0;
-  const absNum = Math.abs(Math.round(num));
-  const formatted = absNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const absNum = Math.abs(num);
+  
+  let formatted = '';
+  if (absNum % 1 !== 0) {
+    const parts = absNum.toFixed(2).split('.');
+    formatted = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + parts[1];
+  } else {
+    formatted = absNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  
   return `${isNegative ? '-' : ''}Rp ${formatted}`;
 }
 
