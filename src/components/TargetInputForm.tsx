@@ -19,9 +19,10 @@ interface TargetInputFormProps {
   formData: TargetFormData;
   setFormData: React.Dispatch<React.SetStateAction<TargetFormData>>;
   onCalculate: () => void;
+  onReset: () => void;
 }
 
-export const TargetInputForm: React.FC<TargetInputFormProps> = ({ mode, formData, setFormData, onCalculate }) => {
+export const TargetInputForm: React.FC<TargetInputFormProps> = ({ mode, formData, setFormData, onCalculate, onReset }) => {
   const brokers = getBrokers();
   
   const currentBroker = getBrokerById(formData.brokerId);
@@ -228,9 +229,14 @@ export const TargetInputForm: React.FC<TargetInputFormProps> = ({ mode, formData
 
       <div className="divider"></div>
 
-      <button type="button" className="btn btn-primary" onClick={onCalculate}>
-        <Zap size={18} style={{ marginRight: '8px' }} /> Hitung Kebutuhan Modal
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={onCalculate}>
+          <Zap size={18} style={{ marginRight: '8px' }} /> Hitung Kebutuhan Modal
+        </button>
+        <button type="button" className="btn" style={{ background: 'var(--bg-card-hover)', color: 'var(--text-secondary)' }} onClick={onReset} aria-label="Reset form">
+          Reset
+        </button>
+      </div>
     </div>
   );
 };

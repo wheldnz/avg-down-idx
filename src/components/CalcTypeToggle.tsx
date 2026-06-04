@@ -8,17 +8,17 @@ interface CalcTypeToggleProps {
 
 export const CalcTypeToggle: React.FC<CalcTypeToggleProps> = ({ calcType, onTypeChange }) => {
   return (
-    <div className="calc-type-toggle">
-      <div className="container" style={{ padding: '0.5rem 1rem' }}>
-        <div className="mode-toggle" style={{ marginBottom: '0.5rem' }}>
+    <div className="nav-tabs-wrapper">
+      <div className="container">
+        <div className="nav-tabs">
           <button 
-            className={`mode-toggle-btn ${calcType === 'regular' ? 'active' : ''}`}
+            className={`nav-tab ${calcType === 'regular' ? 'active' : ''}`}
             onClick={() => onTypeChange('regular')}
           >
             <Calculator size={18} /> Kalkulator Standar
           </button>
           <button 
-            className={`mode-toggle-btn ${calcType === 'target' ? 'active' : ''}`}
+            className={`nav-tab ${calcType === 'target' ? 'active' : ''}`}
             onClick={() => onTypeChange('target')}
           >
             <Target size={18} /> Target Average

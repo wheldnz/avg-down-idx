@@ -179,6 +179,32 @@ function App() {
     }
   };
 
+  const handleResetRegular = () => {
+    setFormData(prev => ({
+      ...prev,
+      stockCode: '',
+      currentPrice: '',
+      currentLots: '',
+      purchases: []
+    }));
+    setCalcResult(null);
+    setSimResults([]);
+    showToast('Form direset', 'info');
+  };
+
+  const handleResetTarget = () => {
+    setTargetFormData(prev => ({
+      ...prev,
+      stockCode: '',
+      currentPrice: '',
+      currentLots: '',
+      targetAverage: '',
+      newPurchasePrice: ''
+    }));
+    setTargetCalcResult(null);
+    showToast('Form direset', 'info');
+  };
+
   const loadHistoryItem = (item: HistoryItem) => {
     setCalcType('regular');
     setMode(item.mode as 'down' | 'up');
@@ -230,6 +256,7 @@ function App() {
                   formData={formData} 
                   setFormData={setFormData} 
                   onCalculate={handleCalculateRegular} 
+                  onReset={handleResetRegular}
                 />
               ) : (
                 <TargetInputForm 
@@ -237,6 +264,7 @@ function App() {
                   formData={targetFormData} 
                   setFormData={setTargetFormData} 
                   onCalculate={handleCalculateTarget} 
+                  onReset={handleResetTarget}
                 />
               )}
             </div>
@@ -277,7 +305,6 @@ function App() {
                     <TargetResultSection 
                       calcResult={targetCalcResult} 
                       stockCode={targetFormData.stockCode}
-                      mode={mode}
                     />
                   </div>
                 ) : (

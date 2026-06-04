@@ -9,9 +9,10 @@ interface InputFormProps {
   formData: InputFormData;
   setFormData: React.Dispatch<React.SetStateAction<InputFormData>>;
   onCalculate: () => void;
+  onReset: () => void;
 }
 
-export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormData, onCalculate }) => {
+export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormData, onCalculate, onReset }) => {
   const brokers = getBrokers();
   const MAX_STEPS = 10;
   
@@ -281,9 +282,14 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
 
       <div className="divider"></div>
 
-      <button type="button" className="btn btn-primary" onClick={onCalculate}>
-        <Zap size={18} style={{ marginRight: '8px' }} /> Hitung Average
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={onCalculate}>
+          <Zap size={18} style={{ marginRight: '8px' }} /> Hitung Average
+        </button>
+        <button type="button" className="btn" style={{ background: 'var(--bg-card-hover)', color: 'var(--text-secondary)' }} onClick={onReset} aria-label="Reset form">
+          Reset
+        </button>
+      </div>
     </div>
   );
 };
