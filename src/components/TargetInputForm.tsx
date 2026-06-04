@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Zap, Wallet, Pin } from 'lucide-react';
 import { getBrokers, getBrokerById } from '../utils/brokers';
-import { formatNumber, parseFormattedNumber, formatRupiah } from '../utils/formatters';
+import { parseFormattedNumber, formatRupiah, formatInputNumber } from '../utils/formatters';
 
 export interface TargetFormData {
   stockCode: string;
@@ -37,15 +37,7 @@ export const TargetInputForm: React.FC<TargetInputFormProps> = ({ mode, formData
   };
 
   const handleNumberInput = (field: keyof TargetFormData, value: string) => {
-    const rawValue = value.replace(/\./g, '').replace(/[^\d]/g, '');
-    if (rawValue === '') {
-      setFormData(prev => ({ ...prev, [field]: '' }));
-      return;
-    }
-    const num = parseInt(rawValue, 10);
-    if (!isNaN(num)) {
-      setFormData(prev => ({ ...prev, [field]: formatNumber(num) }));
-    }
+    setFormData(prev => ({ ...prev, [field]: formatInputNumber(value) }));
   };
 
   const handleDecimalInput = (field: 'customBuyFee' | 'customSellFee', value: string) => {

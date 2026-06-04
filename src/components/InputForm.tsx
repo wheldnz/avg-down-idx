@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pin, Wallet, Zap, X } from 'lucide-react';
 import { getBrokers, getBrokerById } from '../utils/brokers';
-import { formatNumber, parseFormattedNumber, formatRupiah } from '../utils/formatters';
+import { parseFormattedNumber, formatRupiah, formatInputNumber } from '../utils/formatters';
 import { InputFormData, PurchaseStepData } from '../types';
 
 interface InputFormProps {
@@ -28,24 +28,11 @@ export const InputForm: React.FC<InputFormProps> = ({ mode, formData, setFormDat
   };
 
   const handleNumberInput = (field: keyof InputFormData, value: string) => {
-    const rawValue = value.replace(/\./g, '').replace(/[^\d]/g, '');
-    if (rawValue === '') {
-      setFormData(prev => ({ ...prev, [field]: '' }));
-      return;
-    }
-    const num = parseInt(rawValue, 10);
-    if (!isNaN(num)) {
-      setFormData(prev => ({ ...prev, [field]: formatNumber(num) }));
-    }
+    setFormData(prev => ({ ...prev, [field]: formatInputNumber(value) }));
   };
 
   const handlePurchaseInput = (id: string, field: keyof PurchaseStepData, value: string) => {
-    const rawValue = value.replace(/\./g, '').replace(/[^\d]/g, '');
-    let formatted = '';
-    if (rawValue !== '') {
-      const num = parseInt(rawValue, 10);
-      if (!isNaN(num)) formatted = formatNumber(num);
-    }
+    const formatted = formatInputNumber(value);
     setFormData(prev => ({
       ...prev,
       purchases: prev.purchases.map(p => p.id === id ? { ...p, [field]: formatted } : p)

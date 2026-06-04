@@ -5,7 +5,6 @@ import { formatNumber, formatRupiah } from '../utils/formatters';
 interface TargetResultSectionProps {
   calcResult: TargetCalcResult;
   stockCode: string;
-  mode: 'down' | 'up';
 }
 
 export const TargetResultSection: React.FC<TargetResultSectionProps> = ({ calcResult, stockCode }) => {

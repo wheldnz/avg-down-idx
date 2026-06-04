@@ -16,8 +16,27 @@ export function formatRupiah(num: number | null | undefined): string {
 
 export function formatNumber(num: number | null | undefined): string {
   if (num === null || num === undefined || isNaN(num)) return '0';
-  const rounded = Math.round(num);
-  return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  if (num % 1 !== 0) {
+    const parts = num.toString().split('.');
+    let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${integerPart},${parts[1].substring(0, 4)}`; // Keep up to 4 decimals
+  }
+  
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+export function formatInputNumber(value: string): string {
+  if (!value) return '';
+  let val = value.replace(/[^\d,]/g, '');
+  const parts = val.split(',');
+  
+  let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  
+  if (parts.length > 1) {
+    return `${integerPart},${parts[1]}`;
+  }
+  return integerPart;
 }
 
 export function parseFormattedNumber(str: string | null | undefined): number {
