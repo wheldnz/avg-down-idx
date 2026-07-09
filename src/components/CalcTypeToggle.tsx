@@ -1,9 +1,9 @@
 import React from 'react';
-import { Calculator, Target } from 'lucide-react';
+import { Calculator, Target, Briefcase } from 'lucide-react';
 
 interface CalcTypeToggleProps {
-  calcType: 'regular' | 'target';
-  onTypeChange: (type: 'regular' | 'target') => void;
+  calcType: 'regular' | 'target' | 'right-issue';
+  onTypeChange: (type: 'regular' | 'target' | 'right-issue') => void;
 }
 
 export const CalcTypeToggle: React.FC<CalcTypeToggleProps> = ({ calcType, onTypeChange }) => {
@@ -22,6 +22,12 @@ export const CalcTypeToggle: React.FC<CalcTypeToggleProps> = ({ calcType, onType
             onClick={() => onTypeChange('target')}
           >
             <Target size={18} /> Target Average
+          </button>
+          <button 
+            className={`nav-tab ${calcType === 'right-issue' ? 'active' : ''}`}
+            onClick={() => onTypeChange('right-issue')}
+          >
+            <Briefcase size={18} /> Right Issue
           </button>
         </div>
       </div>

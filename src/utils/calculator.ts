@@ -168,6 +168,49 @@ export function simulateAtPrice(calcResult: CalcResult, targetPrice: number): Si
   };
 }
 
+export interface RightIssueResult {
+  theoreticalPrice: number;
+  rightsLots: number;
+  requiredCapital: number;
+  newAveragePrice: number;
+  newTotalLots: number;
+  portfolioLossIfNotExercised: number; // Potential dilution loss
+}
+
+export function calculateRightIssue(
+  oldRatio: number,
+  newRatio: number,
+  cumPrice: number,
+  exercisePrice: number,
+  currentLots: number = 0,
+  currentAverage: number = 0
+): RightIssueResult {
+  // Harga Teoritis = ((Rasio Lama * Harga Cum) + (Rasio Baru * Harga Tebus)) / (Rasio Lama + Rasio Baru)
+  const theoreticalPrice = ((oldRatio * cumPrice) + (newRatio * exercisePrice)) / (oldRatio + newRatio);
+
+  // Dampak Portofolio
+  const rightsLots = (currentLots / oldRatio) * newRatio;
+  const rightsShares = rightsLots * 100;
+  const requiredCapital = rightsShares * exercisePrice;
+  
+  const currentTotalCapital = currentLots * 100 * currentAverage;
+  const newTotalLots = currentLots + rightsLots;
+  const newAveragePrice = (currentTotalCapital + requiredCapital) / (newTotalLots * 100);
+
+  // Jika tidak tebus (dilusi) - nilai portofolio mengikuti harga teoritis, modal tetap
+  const portfolioValueIfNoAction = currentLots * 100 * theoreticalPrice;
+  const portfolioLossIfNotExercised = currentTotalCapital - portfolioValueIfNoAction;
+
+  return {
+    theoreticalPrice,
+    rightsLots,
+    requiredCapital,
+    newAveragePrice,
+    newTotalLots,
+    portfolioLossIfNotExercised: portfolioLossIfNotExercised > 0 ? portfolioLossIfNotExercised : 0
+  };
+}
+
 export interface TargetCalcResult {
   requiredLots: number;
   requiredShares: number;

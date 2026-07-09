@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb, Target } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import { Header } from './components/Header';
 import { ModeToggle } from './components/ModeToggle';
 import { CalcTypeToggle } from './components/CalcTypeToggle';
@@ -11,10 +11,12 @@ import { Simulation } from './components/Simulation';
 import { History } from './components/History';
 import { TargetInputForm, TargetFormData } from './components/TargetInputForm';
 import { TargetResultSection } from './components/TargetResultSection';
+import { RightIssueInputForm, RightIssueFormData } from './components/RightIssueInputForm';
+import { RightIssueResultSection } from './components/RightIssueResultSection';
 import { ToastContainer } from './components/ToastContainer';
 import { useToast } from './hooks/useToast';
 import { InputFormData } from './types';
-import { calculateAverage, simulateProfitLoss, calculateTargetAverage, CalcResult, SimulationResult, TargetCalcResult } from './utils/calculator';
+import { calculateAverage, simulateProfitLoss, calculateTargetAverage, calculateRightIssue, CalcResult, SimulationResult, TargetCalcResult, RightIssueResult } from './utils/calculator';
 import { getBrokerById } from './utils/brokers';
 import { parseFormattedNumber } from './utils/formatters';
 import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryItem, clearHistory as clearStorageHistory, HistoryItem } from './utils/storage';
@@ -22,7 +24,7 @@ import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryIt
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mode, setMode] = useState<'down' | 'up'>('down');
-  const [calcType, setCalcType] = useState<'regular' | 'target'>('regular');
+  const [calcType, setCalcType] = useState<'regular' | 'target' | 'right-issue'>('regular');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   
   const [formData, setFormData] = useState<InputFormData>({
@@ -46,10 +48,20 @@ function App() {
     newPurchasePrice: ''
   });
 
+  const [rightIssueFormData, setRightIssueFormData] = useState<RightIssueFormData>({
+    stockCode: '',
+    oldRatio: '',
+    newRatio: '',
+    cumPrice: '',
+    exercisePrice: '',
+    currentPrice: '',
+    currentLots: ''
+  });
+
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [simResults, setSimResults] = useState<SimulationResult[]>([]);
-  
   const [targetCalcResult, setTargetCalcResult] = useState<TargetCalcResult | null>(null);
+  const [rightIssueResult, setRightIssueResult] = useState<RightIssueResult | null>(null);
 
   const { toasts, showToast } = useToast();
 
@@ -179,6 +191,24 @@ function App() {
     }
   };
 
+  const handleCalculateRightIssue = () => {
+    const oldR = parseFormattedNumber(rightIssueFormData.oldRatio);
+    const newR = parseFormattedNumber(rightIssueFormData.newRatio);
+    const cumP = parseFormattedNumber(rightIssueFormData.cumPrice);
+    const excP = parseFormattedNumber(rightIssueFormData.exercisePrice);
+    const curP = parseFormattedNumber(rightIssueFormData.currentPrice);
+    const curL = parseFormattedNumber(rightIssueFormData.currentLots);
+
+    if (!oldR || !newR || !cumP || !excP) {
+      showToast('Rasio dan Harga wajib diisi', 'error');
+      return;
+    }
+
+    const res = calculateRightIssue(oldR, newR, cumP, excP, curL, curP);
+    setRightIssueResult(res);
+    showToast('Kalkulasi Right Issue berhasil!', 'success');
+  };
+
   const handleResetRegular = () => {
     setFormData(prev => ({
       ...prev,
@@ -202,6 +232,21 @@ function App() {
       newPurchasePrice: ''
     }));
     setTargetCalcResult(null);
+    showToast('Form direset', 'info');
+  };
+
+  const handleResetRightIssue = () => {
+    setRightIssueFormData(prev => ({
+      ...prev,
+      stockCode: '',
+      oldRatio: '',
+      newRatio: '',
+      cumPrice: '',
+      exercisePrice: '',
+      currentPrice: '',
+      currentLots: ''
+    }));
+    setRightIssueResult(null);
     showToast('Form direset', 'info');
   };
 
@@ -249,8 +294,8 @@ function App() {
         
         <div className="container mt-4">
           <div className="app-grid">
-            <div className="grid-left">
-              {calcType === 'regular' ? (
+            <div className="col-lg-5">
+              {calcType === 'regular' && (
                 <InputForm 
                   mode={mode} 
                   formData={formData} 
@@ -258,7 +303,8 @@ function App() {
                   onCalculate={handleCalculateRegular} 
                   onReset={handleResetRegular}
                 />
-              ) : (
+              )}
+              {calcType === 'target' && (
                 <TargetInputForm 
                   mode={mode} 
                   formData={targetFormData} 
@@ -267,9 +313,17 @@ function App() {
                   onReset={handleResetTarget}
                 />
               )}
+              {calcType === 'right-issue' && (
+                <RightIssueInputForm 
+                  formData={rightIssueFormData} 
+                  setFormData={setRightIssueFormData} 
+                  onCalculate={handleCalculateRightIssue} 
+                  onReset={handleResetRightIssue}
+                />
+              )}
             </div>
             
-            <div className="grid-right">
+            <div className="col-lg-7">
               {calcType === 'regular' ? (
                 calcResult ? (
                   <div id="results-container">
@@ -299,7 +353,7 @@ function App() {
                     <p>Silakan isi data posisi saham Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
                   </div>
                 )
-              ) : (
+              ) : calcType === 'target' ? (
                 targetCalcResult ? (
                   <div id="target-results-container">
                     <TargetResultSection 
@@ -308,10 +362,26 @@ function App() {
                     />
                   </div>
                 ) : (
-                  <div className="empty-state" id="empty-state">
-                    <div className="empty-state-icon"><Target size={48} className="gold-text" /></div>
-                    <h3>Belum Ada Kalkulasi Target</h3>
-                    <p>Silakan isi posisi saat ini, skenario target, dan harga beli baru, lalu klik "Hitung Kebutuhan Modal".</p>
+                  <div className="empty-state">
+                    <div className="empty-state-icon">🎯</div>
+                    <h3>Belum Ada Hasil Kalkulasi</h3>
+                    <p>Silakan isi form target average di samping dan klik tombol <strong>Hitung Kebutuhan Modal</strong></p>
+                  </div>
+                )
+              ) : (
+                rightIssueResult ? (
+                  <div id="ri-results-container">
+                    <RightIssueResultSection 
+                      calcResult={rightIssueResult} 
+                      stockCode={rightIssueFormData.stockCode}
+                      hasPortfolio={parseFormattedNumber(rightIssueFormData.currentLots) > 0}
+                    />
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">💼</div>
+                    <h3>Belum Ada Hasil Kalkulasi</h3>
+                    <p>Silakan isi rasio dan harga di form samping lalu klik tombol <strong>Hitung Right Issue</strong></p>
                   </div>
                 )
               )}
