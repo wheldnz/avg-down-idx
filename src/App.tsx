@@ -13,18 +13,23 @@ import { TargetInputForm, TargetFormData } from './components/TargetInputForm';
 import { TargetResultSection } from './components/TargetResultSection';
 import { RightIssueInputForm, RightIssueFormData } from './components/RightIssueInputForm';
 import { RightIssueResultSection } from './components/RightIssueResultSection';
+import { CryptoInputForm } from './components/CryptoInputForm';
+import { CryptoResultSection } from './components/CryptoResultSection';
+import { CryptoChartsSection } from './components/CryptoChartsSection';
+import { CryptoTransactionDetails } from './components/CryptoTransactionDetails';
+import { CryptoSimulation } from './components/CryptoSimulation';
 import { ToastContainer } from './components/ToastContainer';
 import { useToast } from './hooks/useToast';
-import { InputFormData } from './types';
-import { calculateAverage, simulateProfitLoss, calculateTargetAverage, calculateRightIssue, CalcResult, SimulationResult, TargetCalcResult, RightIssueResult } from './utils/calculator';
-import { getBrokerById } from './utils/brokers';
+import { InputFormData, CryptoInputFormData } from './types';
+import { calculateAverage, simulateProfitLoss, calculateTargetAverage, calculateRightIssue, calculateCryptoAverage, simulateCryptoProfitLoss, CalcResult, SimulationResult, TargetCalcResult, RightIssueResult, CryptoCalcResult, CryptoSimulationResult } from './utils/calculator';
+import { getBrokerById, getCryptoBrokerById } from './utils/brokers';
 import { parseFormattedNumber } from './utils/formatters';
 import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryItem, clearHistory as clearStorageHistory, HistoryItem } from './utils/storage';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mode, setMode] = useState<'down' | 'up'>('down');
-  const [calcType, setCalcType] = useState<'regular' | 'target' | 'right-issue'>('regular');
+  const [calcType, setCalcType] = useState<'regular' | 'target' | 'right-issue' | 'crypto'>('regular');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   
   const [formData, setFormData] = useState<InputFormData>({
@@ -58,10 +63,22 @@ function App() {
     currentLots: ''
   });
 
+  const [cryptoFormData, setCryptoFormData] = useState<CryptoInputFormData>({
+    coinCode: '',
+    brokerId: 'tokocrypto',
+    customBuyFee: '0.10',
+    customSellFee: '0.10',
+    currentPrice: '',
+    currentCoins: '',
+    purchases: []
+  });
+
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [simResults, setSimResults] = useState<SimulationResult[]>([]);
   const [targetCalcResult, setTargetCalcResult] = useState<TargetCalcResult | null>(null);
   const [rightIssueResult, setRightIssueResult] = useState<RightIssueResult | null>(null);
+  const [cryptoCalcResult, setCryptoCalcResult] = useState<CryptoCalcResult | null>(null);
+  const [cryptoSimResults, setCryptoSimResults] = useState<CryptoSimulationResult[]>([]);
 
   const { toasts, showToast } = useToast();
 
@@ -250,6 +267,60 @@ function App() {
     showToast('Form direset', 'info');
   };
 
+  const handleCalculateCrypto = () => {
+    const currentPrice = parseFloat(cryptoFormData.currentPrice.replace(/,/g, '.')) || 0;
+    const currentCoins = parseFloat(cryptoFormData.currentCoins.replace(/,/g, '.')) || 0;
+    
+    if (currentPrice <= 0 || currentCoins <= 0) {
+      showToast('Harga dan jumlah koin saat ini harus diisi', 'error');
+      return;
+    }
+
+    const purchases = cryptoFormData.purchases.map(p => ({
+      price: parseFloat(p.price.replace(/,/g, '.')) || 0,
+      coins: parseFloat(p.coins.replace(/,/g, '.')) || 0
+    })).filter(p => p.price > 0 && p.coins > 0);
+
+    if (purchases.length === 0) {
+      showToast('Minimal satu data pembelian (harga & koin) harus diisi', 'error');
+      return;
+    }
+
+    const broker = getCryptoBrokerById(cryptoFormData.brokerId);
+    let brokerData = broker!;
+    
+    if (cryptoFormData.brokerId === 'custom_crypto') {
+      const bFee = parseFloat(cryptoFormData.customBuyFee.replace(',', '.'));
+      const sFee = parseFloat(cryptoFormData.customSellFee.replace(',', '.'));
+      if (isNaN(bFee) || isNaN(sFee)) {
+        showToast('Fee broker tidak valid', 'error');
+        return;
+      }
+      brokerData = { ...brokerData, buyFee: bFee, sellFee: sFee };
+    }
+
+    const result = calculateCryptoAverage({ price: currentPrice, coins: currentCoins }, purchases, brokerData);
+    setCryptoCalcResult(result);
+    
+    const simRes = simulateCryptoProfitLoss(result);
+    setCryptoSimResults(simRes);
+
+    showToast('Kalkulasi Crypto berhasil!', 'success');
+  };
+
+  const handleResetCrypto = () => {
+    setCryptoFormData(prev => ({
+      ...prev,
+      coinCode: '',
+      currentPrice: '',
+      currentCoins: '',
+      purchases: []
+    }));
+    setCryptoCalcResult(null);
+    setCryptoSimResults([]);
+    showToast('Form direset', 'info');
+  };
+
   const loadHistoryItem = (item: HistoryItem) => {
     setCalcType('regular');
     setMode(item.mode as 'down' | 'up');
@@ -290,7 +361,9 @@ function App() {
       
       <main className="main-content">
         <CalcTypeToggle calcType={calcType} onTypeChange={setCalcType} />
-        <ModeToggle mode={mode} onModeChange={setMode} />
+        {calcType !== 'right-issue' && (
+          <ModeToggle mode={mode} onModeChange={setMode} />
+        )}
         
         <div className="container mt-4">
           <div className="app-grid">
@@ -319,6 +392,15 @@ function App() {
                   setFormData={setRightIssueFormData} 
                   onCalculate={handleCalculateRightIssue} 
                   onReset={handleResetRightIssue}
+                />
+              )}
+              {calcType === 'crypto' && (
+                <CryptoInputForm 
+                  mode={mode} 
+                  formData={cryptoFormData} 
+                  setFormData={setCryptoFormData} 
+                  onCalculate={handleCalculateCrypto} 
+                  onReset={handleResetCrypto}
                 />
               )}
             </div>
@@ -368,7 +450,7 @@ function App() {
                     <p>Silakan isi form target average di samping dan klik tombol <strong>Hitung Kebutuhan Modal</strong></p>
                   </div>
                 )
-              ) : (
+              ) : calcType === 'right-issue' ? (
                 rightIssueResult ? (
                   <div id="ri-results-container">
                     <RightIssueResultSection 
@@ -382,6 +464,35 @@ function App() {
                     <div className="empty-state-icon">💼</div>
                     <h3>Belum Ada Hasil Kalkulasi</h3>
                     <p>Silakan isi rasio dan harga di form samping lalu klik tombol <strong>Hitung Right Issue</strong></p>
+                  </div>
+                )
+              ) : (
+                cryptoCalcResult ? (
+                  <div id="crypto-results-container">
+                    <CryptoResultSection 
+                      calcResult={cryptoCalcResult} 
+                      simResults={cryptoSimResults} 
+                      coinCode={cryptoFormData.coinCode} 
+                      mode={mode} 
+                      onToast={showToast} 
+                    />
+                    <CryptoChartsSection 
+                      calcResult={cryptoCalcResult} 
+                      simResults={cryptoSimResults} 
+                      theme={theme} 
+                    />
+                    <CryptoTransactionDetails 
+                      calcResult={cryptoCalcResult} 
+                    />
+                    <CryptoSimulation 
+                      calcResult={cryptoCalcResult} 
+                    />
+                  </div>
+                ) : (
+                  <div className="empty-state" id="empty-state">
+                    <div className="empty-state-icon"><Lightbulb size={48} className="gold-text" /></div>
+                    <h3>Belum Ada Kalkulasi Crypto</h3>
+                    <p>Silakan isi data posisi aset Crypto Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
                   </div>
                 )
               )}

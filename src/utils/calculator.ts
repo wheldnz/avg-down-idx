@@ -292,3 +292,149 @@ export function calculateTargetAverage(
     errorMessage
   };
 }
+
+export interface CryptoPosition {
+  price: number;
+  coins: number;
+}
+
+export interface CryptoTransactionDetail {
+  price: number;
+  coins: number;
+  transactionValue: number;
+  brokerFee: number;
+  totalOutflow: number;
+}
+
+export interface CryptoCalcResult {
+  currentDetail: CryptoTransactionDetail;
+  purchaseDetails: CryptoTransactionDetail[];
+  averagePrice: number;
+  averagePriceExact: number;
+  totalCoins: number;
+  totalModal: number;
+  totalFee: number;
+  totalValueNoFee: number;
+  bep: number;
+  bepExact: number;
+  broker: Broker;
+}
+
+export interface CryptoSimulationResult {
+  label?: string;
+  percentage?: number;
+  targetPrice: number;
+  sellValue: number;
+  sellFee: number;
+  netSellValue: number;
+  profitLoss: number;
+  profitLossPercent: number;
+  priceChangePercent?: number;
+  isProfit: boolean;
+  isLoss: boolean;
+}
+
+export function calculateCryptoTransaction(price: number, coins: number, feePercent: number): CryptoTransactionDetail {
+  const transactionValue = price * coins;
+  const brokerFee = transactionValue * (feePercent / 100);
+  const totalOutflow = transactionValue + brokerFee;
+
+  return {
+    price,
+    coins,
+    transactionValue,
+    brokerFee,
+    totalOutflow
+  };
+}
+
+export function calculateCryptoAverage(currentPosition: CryptoPosition, newPurchases: CryptoPosition[], broker: Broker): CryptoCalcResult {
+  const currentDetail = calculateCryptoTransaction(
+    currentPosition.price,
+    currentPosition.coins,
+    broker.buyFee
+  );
+
+  const purchaseDetails = newPurchases.map(p =>
+    calculateCryptoTransaction(p.price, p.coins, broker.buyFee)
+  );
+
+  const totalCoins = currentPosition.coins + newPurchases.reduce((sum, p) => sum + p.coins, 0);
+
+  const totalValueNoFee = currentDetail.transactionValue +
+    purchaseDetails.reduce((sum, d) => sum + d.transactionValue, 0);
+    
+  const averagePriceExact = totalValueNoFee / totalCoins;
+
+  const totalModal = currentDetail.totalOutflow +
+    purchaseDetails.reduce((sum, d) => sum + d.totalOutflow, 0);
+
+  const totalFee = currentDetail.brokerFee +
+    purchaseDetails.reduce((sum, d) => sum + d.brokerFee, 0);
+
+  const bepExact = totalModal / (totalCoins * (1 - broker.sellFee / 100));
+
+  return {
+    currentDetail,
+    purchaseDetails,
+    averagePrice: averagePriceExact,
+    averagePriceExact,
+    totalCoins,
+    totalModal,
+    totalFee,
+    totalValueNoFee,
+    bep: bepExact,
+    bepExact,
+    broker: { ...broker }
+  };
+}
+
+export function simulateCryptoProfitLoss(calcResult: CryptoCalcResult, customPercentages?: number[]): CryptoSimulationResult[] {
+  const percentages = customPercentages || SIM_PERCENTAGES.map(p => p.value);
+  const labels = customPercentages
+    ? customPercentages.map(p => p > 0 ? `TP +${p}%` : `CL ${p}%`)
+    : SIM_PERCENTAGES.map(p => p.label);
+
+  return percentages.map((pct, i) => {
+    const targetPrice = calcResult.averagePriceExact * (1 + pct / 100);
+    const sellValue = targetPrice * calcResult.totalCoins;
+    const sellFee = sellValue * (calcResult.broker.sellFee / 100);
+    const netSellValue = sellValue - sellFee;
+    const profitLoss = netSellValue - calcResult.totalModal;
+    const profitLossPercent = (profitLoss / calcResult.totalModal) * 100;
+
+    return {
+      label: labels[i],
+      percentage: pct,
+      targetPrice,
+      sellValue,
+      sellFee,
+      netSellValue,
+      profitLoss,
+      profitLossPercent,
+      isProfit: profitLoss > 0,
+      isLoss: profitLoss < 0
+    };
+  });
+}
+
+export function simulateCryptoAtPrice(calcResult: CryptoCalcResult, targetPrice: number): CryptoSimulationResult {
+  const sellValue = targetPrice * calcResult.totalCoins;
+  const sellFee = sellValue * (calcResult.broker.sellFee / 100);
+  const netSellValue = sellValue - sellFee;
+  const profitLoss = netSellValue - calcResult.totalModal;
+  const profitLossPercent = (profitLoss / calcResult.totalModal) * 100;
+  const priceChangePercent = ((targetPrice - calcResult.averagePriceExact) / calcResult.averagePriceExact) * 100;
+
+  return {
+    targetPrice,
+    sellValue,
+    sellFee,
+    netSellValue,
+    profitLoss,
+    profitLossPercent,
+    priceChangePercent,
+    isProfit: profitLoss > 0,
+    isLoss: profitLoss < 0
+  };
+}
