@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Award } from 'lucide-react';
 import { Header } from './components/Header';
 import { ModeToggle } from './components/ModeToggle';
-import { CalcTypeToggle } from './components/CalcTypeToggle';
+import { CalcTypeToggle, CalcType } from './components/CalcTypeToggle';
 import { InputForm } from './components/InputForm';
 import { ResultSection } from './components/ResultSection';
 import { ChartsSection } from './components/ChartsSection';
@@ -13,23 +13,39 @@ import { TargetInputForm, TargetFormData } from './components/TargetInputForm';
 import { TargetResultSection } from './components/TargetResultSection';
 import { RightIssueInputForm, RightIssueFormData } from './components/RightIssueInputForm';
 import { RightIssueResultSection } from './components/RightIssueResultSection';
-import { CryptoInputForm } from './components/CryptoInputForm';
-import { CryptoResultSection } from './components/CryptoResultSection';
-import { CryptoChartsSection } from './components/CryptoChartsSection';
-import { CryptoTransactionDetails } from './components/CryptoTransactionDetails';
-import { CryptoSimulation } from './components/CryptoSimulation';
+import { DividendInputForm } from './components/DividendInputForm';
+import { DividendResultSection } from './components/DividendResultSection';
 import { ToastContainer } from './components/ToastContainer';
 import { useToast } from './hooks/useToast';
-import { InputFormData, CryptoInputFormData } from './types';
-import { calculateAverage, simulateProfitLoss, calculateTargetAverage, calculateRightIssue, calculateCryptoAverage, simulateCryptoProfitLoss, CalcResult, SimulationResult, TargetCalcResult, RightIssueResult, CryptoCalcResult, CryptoSimulationResult } from './utils/calculator';
-import { getBrokerById, getCryptoBrokerById } from './utils/brokers';
+import { InputFormData, DividendInputFormData } from './types';
+import {
+  calculateAverage,
+  simulateProfitLoss,
+  calculateTargetAverage,
+  calculateRightIssue,
+  calculateDividend,
+  CalcResult,
+  SimulationResult,
+  TargetCalcResult,
+  RightIssueResult,
+  DividendCalcResult
+} from './utils/calculator';
+import { getBrokerById } from './utils/brokers';
 import { parseFormattedNumber } from './utils/formatters';
-import { getSettings, saveSettings, getHistory, saveCalculation, deleteHistoryItem, clearHistory as clearStorageHistory, HistoryItem } from './utils/storage';
+import {
+  getSettings,
+  saveSettings,
+  getHistory,
+  saveCalculation,
+  deleteHistoryItem,
+  clearHistory as clearStorageHistory,
+  HistoryItem
+} from './utils/storage';
 
 function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mode, setMode] = useState<'down' | 'up'>('down');
-  const [calcType, setCalcType] = useState<'regular' | 'target' | 'right-issue' | 'crypto'>('regular');
+  const [calcType, setCalcType] = useState<CalcType>('regular');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   
   const [formData, setFormData] = useState<InputFormData>({
@@ -63,22 +79,19 @@ function App() {
     currentLots: ''
   });
 
-  const [cryptoFormData, setCryptoFormData] = useState<CryptoInputFormData>({
-    coinCode: '',
-    brokerId: 'tokocrypto',
-    customBuyFee: '0.10',
-    customSellFee: '0.10',
+  const [dividendFormData, setDividendFormData] = useState<DividendInputFormData>({
+    stockCode: '',
     currentPrice: '',
-    currentCoins: '',
-    purchases: []
+    currentLots: '',
+    dps: '',
+    taxPercent: '0'
   });
 
   const [calcResult, setCalcResult] = useState<CalcResult | null>(null);
   const [simResults, setSimResults] = useState<SimulationResult[]>([]);
   const [targetCalcResult, setTargetCalcResult] = useState<TargetCalcResult | null>(null);
   const [rightIssueResult, setRightIssueResult] = useState<RightIssueResult | null>(null);
-  const [cryptoCalcResult, setCryptoCalcResult] = useState<CryptoCalcResult | null>(null);
-  const [cryptoSimResults, setCryptoSimResults] = useState<CryptoSimulationResult[]>([]);
+  const [dividendCalcResult, setDividendCalcResult] = useState<DividendCalcResult | null>(null);
 
   const { toasts, showToast } = useToast();
 
@@ -145,6 +158,7 @@ function App() {
     const historyItem: HistoryItem = {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
+      type: 'regular',
       stockCode: formData.stockCode,
       mode,
       broker: brokerData,
@@ -152,7 +166,7 @@ function App() {
         { label: 'Awal', price: currentPrice, lots: currentLots },
         ...purchases.map((p, i) => ({ label: `Beli #${i + 1}`, price: p.price, lots: p.lots }))
       ],
-      result: {
+      regularResult: {
         averagePrice: result.averagePrice,
         totalLots: result.totalLots,
         totalShares: result.totalShares,
@@ -202,6 +216,27 @@ function App() {
 
     setTargetCalcResult(result);
     if (result.isValid) {
+      const historyItem: HistoryItem = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        type: 'target',
+        stockCode: targetFormData.stockCode,
+        mode,
+        broker: brokerData,
+        targetDetails: {
+          currentPrice,
+          currentLots,
+          targetAverage: targetAvg,
+          newPurchasePrice: newPrice,
+          requiredLots: result.requiredLots,
+          requiredCapital: result.requiredCapital,
+          finalAverage: result.finalAverage,
+          brokerId: targetFormData.brokerId
+        }
+      };
+
+      saveCalculation(historyItem);
+      setHistoryItems(getHistory());
       showToast('Kalkulasi target berhasil!', 'success');
     } else {
       showToast('Kalkulasi tidak valid', 'error');
@@ -224,6 +259,41 @@ function App() {
     const res = calculateRightIssue(oldR, newR, cumP, excP, curL, curP);
     setRightIssueResult(res);
     showToast('Kalkulasi Right Issue berhasil!', 'success');
+  };
+
+  const handleCalculateDividend = () => {
+    const currentLots = parseFormattedNumber(dividendFormData.currentLots);
+    const dps = parseFormattedNumber(dividendFormData.dps);
+    const avgPrice = parseFormattedNumber(dividendFormData.currentPrice);
+    const taxPercent = parseFloat(dividendFormData.taxPercent.replace(',', '.')) || 0;
+
+    if (currentLots <= 0 || dps <= 0) {
+      showToast('Jumlah lot dan Dividen per Lembar (DPS) harus diisi lebih dari 0', 'error');
+      return;
+    }
+
+    const res = calculateDividend(currentLots, dps, avgPrice, taxPercent);
+    setDividendCalcResult(res);
+
+    const historyItem: HistoryItem = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      type: 'dividend',
+      stockCode: dividendFormData.stockCode,
+      dividendDetails: {
+        currentLots,
+        averagePrice: avgPrice,
+        dps,
+        netDividend: res.netDividend,
+        dividendYield: res.dividendYield,
+        adjustedAverage: res.adjustedAverage,
+        taxPercent
+      }
+    };
+
+    saveCalculation(historyItem);
+    setHistoryItems(getHistory());
+    showToast('Kalkulasi Dividen berhasil!', 'success');
   };
 
   const handleResetRegular = () => {
@@ -267,77 +337,58 @@ function App() {
     showToast('Form direset', 'info');
   };
 
-  const handleCalculateCrypto = () => {
-    const currentPrice = parseFloat(cryptoFormData.currentPrice.replace(/,/g, '.')) || 0;
-    const currentCoins = parseFloat(cryptoFormData.currentCoins.replace(/,/g, '.')) || 0;
-    
-    if (currentPrice <= 0 || currentCoins <= 0) {
-      showToast('Harga dan jumlah koin saat ini harus diisi', 'error');
-      return;
-    }
-
-    const purchases = cryptoFormData.purchases.map(p => ({
-      price: parseFloat(p.price.replace(/,/g, '.')) || 0,
-      coins: parseFloat(p.coins.replace(/,/g, '.')) || 0
-    })).filter(p => p.price > 0 && p.coins > 0);
-
-    if (purchases.length === 0) {
-      showToast('Minimal satu data pembelian (harga & koin) harus diisi', 'error');
-      return;
-    }
-
-    const broker = getCryptoBrokerById(cryptoFormData.brokerId);
-    let brokerData = broker!;
-    
-    if (cryptoFormData.brokerId === 'custom_crypto') {
-      const bFee = parseFloat(cryptoFormData.customBuyFee.replace(',', '.'));
-      const sFee = parseFloat(cryptoFormData.customSellFee.replace(',', '.'));
-      if (isNaN(bFee) || isNaN(sFee)) {
-        showToast('Fee broker tidak valid', 'error');
-        return;
-      }
-      brokerData = { ...brokerData, buyFee: bFee, sellFee: sFee };
-    }
-
-    const result = calculateCryptoAverage({ price: currentPrice, coins: currentCoins }, purchases, brokerData);
-    setCryptoCalcResult(result);
-    
-    const simRes = simulateCryptoProfitLoss(result);
-    setCryptoSimResults(simRes);
-
-    showToast('Kalkulasi Crypto berhasil!', 'success');
-  };
-
-  const handleResetCrypto = () => {
-    setCryptoFormData(prev => ({
-      ...prev,
-      coinCode: '',
+  const handleResetDividend = () => {
+    setDividendFormData({
+      stockCode: '',
       currentPrice: '',
-      currentCoins: '',
-      purchases: []
-    }));
-    setCryptoCalcResult(null);
-    setCryptoSimResults([]);
+      currentLots: '',
+      dps: '',
+      taxPercent: '0'
+    });
+    setDividendCalcResult(null);
     showToast('Form direset', 'info');
   };
 
   const loadHistoryItem = (item: HistoryItem) => {
-    setCalcType('regular');
-    setMode(item.mode as 'down' | 'up');
-    setFormData(prev => ({
-      ...prev,
-      stockCode: item.stockCode || '',
-      brokerId: item.broker.id,
-      customBuyFee: item.broker.id === 'custom' ? item.broker.buyFee.toString() : prev.customBuyFee,
-      customSellFee: item.broker.id === 'custom' ? item.broker.sellFee.toString() : prev.customSellFee,
-      currentPrice: item.positions[0].price.toString(),
-      currentLots: item.positions[0].lots.toString(),
-      purchases: item.positions.slice(1).map(p => ({
-        id: Math.random().toString(),
-        price: p.price.toString(),
-        lots: p.lots.toString()
-      }))
-    }));
+    if (item.type === 'target' && item.targetDetails) {
+      setCalcType('target');
+      if (item.mode) setMode(item.mode as 'down' | 'up');
+      setTargetFormData(prev => ({
+        ...prev,
+        stockCode: item.stockCode || '',
+        brokerId: item.broker?.id || item.targetDetails?.brokerId || prev.brokerId,
+        currentPrice: item.targetDetails!.currentPrice.toString(),
+        currentLots: item.targetDetails!.currentLots.toString(),
+        targetAverage: item.targetDetails!.targetAverage.toString(),
+        newPurchasePrice: item.targetDetails!.newPurchasePrice.toString()
+      }));
+    } else if (item.type === 'dividend' && item.dividendDetails) {
+      setCalcType('dividend');
+      setDividendFormData({
+        stockCode: item.stockCode || '',
+        currentPrice: item.dividendDetails.averagePrice ? item.dividendDetails.averagePrice.toString() : '',
+        currentLots: item.dividendDetails.currentLots.toString(),
+        dps: item.dividendDetails.dps.toString(),
+        taxPercent: item.dividendDetails.taxPercent ? item.dividendDetails.taxPercent.toString() : '0'
+      });
+    } else if (item.positions && item.positions.length > 0) {
+      setCalcType('regular');
+      if (item.mode) setMode(item.mode as 'down' | 'up');
+      setFormData(prev => ({
+        ...prev,
+        stockCode: item.stockCode || '',
+        brokerId: item.broker?.id || prev.brokerId,
+        customBuyFee: item.broker?.id === 'custom' ? item.broker.buyFee.toString() : prev.customBuyFee,
+        customSellFee: item.broker?.id === 'custom' ? item.broker.sellFee.toString() : prev.customSellFee,
+        currentPrice: item.positions![0].price.toString(),
+        currentLots: item.positions![0].lots.toString(),
+        purchases: item.positions!.slice(1).map(p => ({
+          id: Math.random().toString(),
+          price: p.price.toString(),
+          lots: p.lots.toString()
+        }))
+      }));
+    }
     showToast('Data riwayat dimuat', 'info');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -361,7 +412,7 @@ function App() {
       
       <main className="main-content">
         <CalcTypeToggle calcType={calcType} onTypeChange={setCalcType} />
-        {calcType !== 'right-issue' && (
+        {calcType !== 'right-issue' && calcType !== 'dividend' && (
           <ModeToggle mode={mode} onModeChange={setMode} />
         )}
         
@@ -394,13 +445,12 @@ function App() {
                   onReset={handleResetRightIssue}
                 />
               )}
-              {calcType === 'crypto' && (
-                <CryptoInputForm 
-                  mode={mode} 
-                  formData={cryptoFormData} 
-                  setFormData={setCryptoFormData} 
-                  onCalculate={handleCalculateCrypto} 
-                  onReset={handleResetCrypto}
+              {calcType === 'dividend' && (
+                <DividendInputForm 
+                  formData={dividendFormData} 
+                  setFormData={setDividendFormData} 
+                  onCalculate={handleCalculateDividend} 
+                  onReset={handleResetDividend}
                 />
               )}
             </div>
@@ -467,32 +517,19 @@ function App() {
                   </div>
                 )
               ) : (
-                cryptoCalcResult ? (
-                  <div id="crypto-results-container">
-                    <CryptoResultSection 
-                      calcResult={cryptoCalcResult} 
-                      simResults={cryptoSimResults} 
-                      coinCode={cryptoFormData.coinCode} 
-                      mode={mode} 
-                      onToast={showToast} 
-                    />
-                    <CryptoChartsSection 
-                      calcResult={cryptoCalcResult} 
-                      simResults={cryptoSimResults} 
-                      theme={theme} 
-                    />
-                    <CryptoTransactionDetails 
-                      calcResult={cryptoCalcResult} 
-                    />
-                    <CryptoSimulation 
-                      calcResult={cryptoCalcResult} 
+                dividendCalcResult ? (
+                  <div id="dividend-results-container">
+                    <DividendResultSection 
+                      calcResult={dividendCalcResult} 
+                      stockCode={dividendFormData.stockCode}
+                      onToast={showToast}
                     />
                   </div>
                 ) : (
-                  <div className="empty-state" id="empty-state">
-                    <div className="empty-state-icon"><Lightbulb size={48} className="gold-text" /></div>
-                    <h3>Belum Ada Kalkulasi Crypto</h3>
-                    <p>Silakan isi data posisi aset Crypto Anda dan tambahkan pembelian baru, lalu klik "Hitung Average".</p>
+                  <div className="empty-state">
+                    <div className="empty-state-icon"><Award size={48} className="gold-text" /></div>
+                    <h3>Belum Ada Hasil Kalkulasi Dividen</h3>
+                    <p>Silakan isi lot saham dan dividen per lembar (DPS) pada form di samping lalu klik <strong>Hitung Dividen</strong>.</p>
                   </div>
                 )
               )}

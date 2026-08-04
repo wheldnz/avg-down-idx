@@ -7,6 +7,8 @@ const STORAGE_KEYS = {
 
 const MAX_HISTORY = 50;
 
+export type HistoryType = 'regular' | 'target' | 'dividend';
+
 export interface HistoryItemPosition {
   label: string;
   price: number;
@@ -16,11 +18,39 @@ export interface HistoryItemPosition {
 export interface HistoryItem {
   id: string;
   timestamp: string;
+  type: HistoryType;
   stockCode: string;
-  mode: string;
-  broker: Broker;
-  positions: HistoryItemPosition[];
-  result: {
+  mode?: string;
+  broker?: Broker;
+  positions?: HistoryItemPosition[];
+  regularResult?: {
+    averagePrice: number;
+    totalLots: number;
+    totalShares: number;
+    totalModal: number;
+    bep: number;
+  };
+  targetDetails?: {
+    currentPrice: number;
+    currentLots: number;
+    targetAverage: number;
+    newPurchasePrice: number;
+    requiredLots: number;
+    requiredCapital: number;
+    finalAverage: number;
+    brokerId?: string;
+  };
+  dividendDetails?: {
+    currentLots: number;
+    averagePrice: number;
+    dps: number;
+    netDividend: number;
+    dividendYield: number;
+    adjustedAverage: number;
+    taxPercent: number;
+  };
+  // Legacy compatibility
+  result?: {
     averagePrice: number;
     totalLots: number;
     totalShares: number;
@@ -53,7 +83,13 @@ export function saveCalculation(data: HistoryItem): void {
 export function getHistory(): HistoryItem[] {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.history);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed: HistoryItem[] = JSON.parse(data);
+    // Ensure backwards compatibility by assigning default type 'regular' if missing
+    return parsed.map(item => ({
+      ...item,
+      type: item.type || 'regular'
+    }));
   } catch (e) {
     console.warn('Failed to read history:', e);
     return [];

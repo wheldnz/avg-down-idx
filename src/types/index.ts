@@ -14,18 +14,10 @@ export interface InputFormData {
   purchases: PurchaseStepData[];
 }
 
-export interface CryptoPurchaseStepData {
-  id: string;
-  price: string;
-  coins: string;
-}
-
-export interface CryptoInputFormData {
-  coinCode: string;
-  brokerId: string;
-  customBuyFee: string;
-  customSellFee: string;
-  currentPrice: string;
-  currentCoins: string;
-  purchases: CryptoPurchaseStepData[];
+export interface DividendInputFormData {
+  stockCode: string;
+  currentPrice: string; // optional, or average price
+  currentLots: string;
+  dps: string; // Dividend Per Share
+  taxPercent: string; // default 0% for domestic WPO, or 10%
 }

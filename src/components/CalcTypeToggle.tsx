@@ -1,9 +1,11 @@
 import React from 'react';
-import { Calculator, Target, Briefcase, Bitcoin } from 'lucide-react';
+import { Calculator, Target, Briefcase, DollarSign } from 'lucide-react';
+
+export type CalcType = 'regular' | 'target' | 'right-issue' | 'dividend';
 
 interface CalcTypeToggleProps {
-  calcType: 'regular' | 'target' | 'right-issue' | 'crypto';
-  onTypeChange: (type: 'regular' | 'target' | 'right-issue' | 'crypto') => void;
+  calcType: CalcType;
+  onTypeChange: (type: CalcType) => void;
 }
 
 export const CalcTypeToggle: React.FC<CalcTypeToggleProps> = ({ calcType, onTypeChange }) => {
@@ -24,16 +26,16 @@ export const CalcTypeToggle: React.FC<CalcTypeToggleProps> = ({ calcType, onType
             <Target size={18} /> Target Average
           </button>
           <button 
-            className={`nav-tab ${calcType === 'crypto' ? 'active' : ''}`}
-            onClick={() => onTypeChange('crypto')}
-          >
-            <Bitcoin size={18} /> Kalkulator Crypto
-          </button>
-          <button 
             className={`nav-tab ${calcType === 'right-issue' ? 'active' : ''}`}
             onClick={() => onTypeChange('right-issue')}
           >
             <Briefcase size={18} /> Right Issue
+          </button>
+          <button 
+            className={`nav-tab ${calcType === 'dividend' ? 'active' : ''}`}
+            onClick={() => onTypeChange('dividend')}
+          >
+            <DollarSign size={18} /> Dividen & Yield
           </button>
         </div>
       </div>
